@@ -6,15 +6,25 @@ use crate::png::ChunkTypes;
 
 mod png;
 
+enum PrintType {
+    Simple,
+    Extended,
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
     let file_path = &args[1];
 
+    let mut print_type = PrintType::Extended;
+    let mut skip_bytes = false;
+
     for arg in &args {
         match arg.as_str() {
-            "-s" => {}
-            "-h" => {}
+            "-s" => {
+                print_type = PrintType::Simple;
+            }
+            "-b" => skip_bytes = true,
             _ => {}
         }
     }
@@ -23,7 +33,43 @@ fn main() {
 
     let chunk_iter = ChunkIterator::new(&file_bytes);
 
+    let print_fn = match print_type {
+        PrintType::Extended => print_extended,
+        PrintType::Simple => print_simple,
+    };
+
     for chunk in chunk_iter {
+        print_fn(&chunk, skip_bytes);
+    }
+
+    fn print_simple(chunk: &ChunkTypes, skip_bytes: bool) {
+        match chunk {
+            ChunkTypes::IHDR(data) => {
+                println! {"IHDR:"}
+                println!(
+                    "\tSize: {}x{}px",
+                    u32::from_be_bytes(data.width),
+                    u32::from_be_bytes(data.height)
+                );
+            }
+            ChunkTypes::IDAT(data) => {
+                println!("IDAT:");
+            }
+            ChunkTypes::PLTE(data) => {
+                println!("PLTE:");
+            }
+            ChunkTypes::IEND => {
+                println!("IEND:");
+            }
+            ChunkTypes::Text(text) => {
+                println!("Text:");
+                println!("\t{}", text)
+            }
+            ChunkTypes::Unknown(chunk_type_str, chunk_data_size, bytes) => {}
+        }
+    }
+
+    fn print_extended(chunk: &ChunkTypes, skip_bytes: bool) {
         match chunk {
             ChunkTypes::IHDR(data) => {
                 println! {"IHDR:"}
@@ -55,7 +101,10 @@ fn main() {
                 println!("Unknown chunk:");
                 println!("\t Type: {}", chunk_type_str);
                 println!("\t Data size: {}", chunk_data_size);
-                println!("\t Bytes: {:?}", bytes);
+
+                if skip_bytes == false {
+                    println!("\t Bytes: {:?}", bytes);
+                }
             }
         }
     }
