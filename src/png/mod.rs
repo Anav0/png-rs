@@ -38,7 +38,7 @@ impl<'a> Iterator for ChunkIterator<'a> {
         let chunk_total_length = (4 + 4 + chunk_length_in_bytes + 4) as usize;
 
         let info = ChunkBasicInfo {
-            CRC: [0; 4], //TODO: calculate CRC
+            CRC: calculate_crc(chunk_length_in_bytes, &self.bytes, self.i),
             data_length: chunk_length,
             type_str: String::from(chunk_type_str),
             type_bytes: chunk_type,
@@ -69,6 +69,14 @@ impl<'a> Iterator for ChunkIterator<'a> {
 
         Some(chunk_type)
     }
+}
+
+//TODO: calculate CRC
+fn calculate_crc(chunk_length: u32, bytes: &Vec<u8>, i: usize) -> [u8; 4] {
+    let start = i + 8 + chunk_length as usize;
+    let crc_bytes = bytes[start..start + 4].to_vec();
+
+    [0; 4]
 }
 
 fn check_if_png(file_bytes: &Vec<u8>) {

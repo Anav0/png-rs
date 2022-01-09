@@ -66,10 +66,16 @@ impl PLTE {
         let mut palette: Vec<Color> = Vec::with_capacity(info.data_length.len());
 
         let base_index = i + 8; //Skipping length and type
-        for j in 0..info.data_length.len() {
-            palette[j].red = bytes[base_index + j];
-            palette[j].green = bytes[base_index + j + 1];
-            palette[j].blue = bytes[base_index + j + 2];
+        let data_length_decimal = u32::from_be_bytes(info.data_length) as usize;
+        let mut j = 0;
+        while j < data_length_decimal {
+            let color = Color {
+                red: bytes[base_index + j],
+                green: bytes[base_index + j + 1],
+                blue: bytes[base_index + j + 2],
+            };
+            palette.push(color);
+            j += 3;
         }
 
         Self { info, palette }
