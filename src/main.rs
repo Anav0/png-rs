@@ -4,6 +4,7 @@ use png::ChunkIterator;
 
 use crate::png::ChunkTypes;
 
+mod chunks;
 mod png;
 
 enum PrintType {
@@ -52,20 +53,14 @@ fn main() {
                     u32::from_be_bytes(data.height)
                 );
             }
-            ChunkTypes::IDAT(data) => {
-                println!("IDAT:");
-            }
-            ChunkTypes::PLTE(data) => {
-                println!("PLTE:");
-            }
             ChunkTypes::IEND => {
                 println!("IEND:");
             }
-            ChunkTypes::Text(text) => {
+            ChunkTypes::tEXt(text) => {
                 println!("Text:");
                 println!("\t{}", text)
             }
-            ChunkTypes::Unknown(chunk_type_str, chunk_data_size, bytes) => {}
+            _ => {}
         }
     }
 
@@ -84,16 +79,7 @@ fn main() {
                 println!("\tFilter method: {}", data.filter_method);
                 println!("\tInterlace method: {}", data.interlace_method);
             }
-            ChunkTypes::IDAT(data) => {
-                println!("IDAT:");
-            }
-            ChunkTypes::PLTE(data) => {
-                println!("PLTE:");
-            }
-            ChunkTypes::IEND => {
-                println!("IEND:");
-            }
-            ChunkTypes::Text(text) => {
+            ChunkTypes::tEXt(text) => {
                 println!("Text:");
                 println!("\t{}", text)
             }
@@ -106,6 +92,7 @@ fn main() {
                     println!("\t Bytes: {:?}", bytes);
                 }
             }
+            _ => {}
         }
     }
 }

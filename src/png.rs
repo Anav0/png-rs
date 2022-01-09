@@ -1,44 +1,24 @@
-/// Chunk can be any length, so we cannot assume it is x number of bytes
-#[derive(Debug)]
-pub struct Chunk {
-    pub length: u32,
-    pub data_type: u32,
-    pub data: usize,
-    pub CRC: u32,
-}
+use crate::chunks::{IDAT, IHDR, PLTE};
 
 pub enum ChunkTypes {
     IHDR(IHDR),
-    IDAT(IDAT),
     PLTE(PLTE),
+    IDAT(IDAT),
     IEND,
-    Text(String),
+    cHRM,
+    gAMA,
+    iCCP,
+    sBIT,
+    sRGB,
+    hIST,
+    tRNS,
+    pHYs,
+    sPLT,
+    tIME,
+    iTXt,
+    tEXt(String),
+    zTXt,
     Unknown(String, usize, Vec<u8>),
-}
-
-#[derive(Debug)]
-pub struct IHDR {
-    pub width: [u8; 4],
-    pub height: [u8; 4],
-    pub bit_depth: u8,
-    pub color_type: u8,
-    pub compression_method: u8,
-    pub filter_method: u8,
-    pub interlace_method: u8,
-}
-
-pub struct Color {
-    pub red: u8,
-    pub green: u8,
-    pub blue: u8,
-}
-
-pub struct PLTE {
-    pub palette: [Color; 256],
-}
-
-pub struct IDAT {
-    pub image_data: [u8; 32],
 }
 
 pub struct ChunkIterator<'a> {
@@ -88,7 +68,7 @@ impl<'a> ChunkIterator<'a> {
         let text = std::str::from_utf8(&self.bytes[start..start + data_length])
             .expect("Failed to read text from chunk");
 
-        ChunkTypes::Text(String::from(text))
+        ChunkTypes::tEXt(String::from(text))
     }
 }
 
@@ -112,12 +92,24 @@ impl<'a> Iterator for ChunkIterator<'a> {
         //Chunk length + chunk type + data length + CRC
         let chunk_total_length = (4 + 4 + chunk_length_in_bytes + 4) as usize;
 
-        let chunk_type = match chunk_type_str.to_lowercase().as_str() {
-            "ihdr" => self.parse_ihdr(),
-            "plte" => self.parse_plte(),
-            "idat" => self.parse_Idat(),
-            "iend" => ChunkTypes::IEND,
-            "text" => self.parse_text(chunk_length_in_bytes as usize),
+        let chunk_type = match chunk_type_str {
+            "IHDR" => self.parse_ihdr(),
+            "PLTE" => self.parse_plte(),
+            "IDAT" => self.parse_Idat(),
+            "IEND" => ChunkTypes::IEND,
+            "cHRM" => ChunkTypes::cHRM,
+            "gAMA" => ChunkTypes::gAMA,
+            "iCCP" => ChunkTypes::iCCP,
+            "sBIT" => ChunkTypes::sBIT,
+            "sRGB" => ChunkTypes::sRGB,
+            "hIST" => ChunkTypes::hIST,
+            "tRNS" => ChunkTypes::tRNS,
+            "pHYs" => ChunkTypes::pHYs,
+            "sPLT" => ChunkTypes::sPLT,
+            "tIME" => ChunkTypes::tIME,
+            "iTXt" => ChunkTypes::iTXt,
+            "zTXt" => ChunkTypes::zTXt,
+            "tEXt" => self.parse_text(chunk_length_in_bytes as usize),
             _ => ChunkTypes::Unknown(
                 String::from(chunk_type_str),
                 chunk_length_in_bytes as usize,
