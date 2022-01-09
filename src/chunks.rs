@@ -7,6 +7,16 @@ pub struct Color {
     pub blue: u8,
 }
 
+impl Default for Color {
+    fn default() -> Self {
+        Self {
+            red: Default::default(),
+            green: Default::default(),
+            blue: Default::default(),
+        }
+    }
+}
+
 /// Chunk can be any length, so we cannot assume it is x number of bytes
 #[derive(Debug)]
 pub struct ChunkBasicInfo {
@@ -70,19 +80,21 @@ impl Chunk for IHDR {
 
 pub struct PLTE {
     pub info: ChunkBasicInfo,
-    pub palette: [Color; 256],
+    pub palette: Vec<Color>,
 }
 
 impl PLTE {
-    pub fn new(info: ChunkBasicInfo) -> Self {
-        Self {
-            info,
-            palette: [Color {
-                red: 0,
-                green: 0,
-                blue: 0,
-            }; 256], //TODO: parse palette
+    pub fn new(info: ChunkBasicInfo, i: usize, bytes: &Vec<u8>) -> Self {
+        let mut palette: Vec<Color> = Vec::with_capacity(info.data_length.len());
+
+        let base_index = i + 8; //Skipping length and type
+        for j in 0..info.data_length.len() {
+            palette[j].red = bytes[base_index + j];
+            palette[j].green = bytes[base_index + j + 1];
+            palette[j].blue = bytes[base_index + j + 2];
         }
+
+        Self { info, palette }
     }
 }
 

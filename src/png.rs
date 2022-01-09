@@ -44,7 +44,7 @@ impl<'a> Iterator for ChunkIterator<'a> {
 
         let chunk_type: Box<dyn Chunk> = match chunk_type_str {
             "IHDR" => Box::from(IHDR::new(self.i, &self.bytes, info)),
-            "PLTE" => Box::from(PLTE::new(info)),
+            "PLTE" => Box::from(PLTE::new(info, self.i, self.bytes)),
             "IDAT" => Box::from(IDAT::new(info, &self.bytes)),
             "IEND" => Box::from(IEND::new(info)),
             "tEXt" => Box::from(tEXt::new(self.i, info, self.bytes)),
