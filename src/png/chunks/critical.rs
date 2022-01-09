@@ -1,30 +1,8 @@
-use std::{fmt::Display, mem::Discriminant};
+use std::fmt::Display;
 
-#[derive(Clone, Copy, Debug)]
-pub struct Color {
-    pub red: u8,
-    pub green: u8,
-    pub blue: u8,
-}
+use super::get_basic_data_str;
 
-impl Default for Color {
-    fn default() -> Self {
-        Self {
-            red: Default::default(),
-            green: Default::default(),
-            blue: Default::default(),
-        }
-    }
-}
-
-/// Chunk can be any length, so we cannot assume it is x number of bytes
-#[derive(Debug)]
-pub struct ChunkBasicInfo {
-    pub data_length: [u8; 4],
-    pub CRC: [u8; 4],
-    pub type_str: String,
-    pub type_bytes: [u8; 4],
-}
+use super::{Chunk, ChunkBasicInfo, Color};
 
 #[derive(Debug)]
 pub struct IHDR {
@@ -113,6 +91,7 @@ impl Display for PLTE {
         )
     }
 }
+
 pub struct IDAT {
     pub info: ChunkBasicInfo,
     pub image_data: [u8; 32],
@@ -157,74 +136,4 @@ impl Chunk for IEND {
     fn get_basic_info(&self) -> &ChunkBasicInfo {
         &self.info
     }
-}
-
-pub struct tEXt {
-    info: ChunkBasicInfo,
-    text: String,
-}
-
-impl Display for tEXt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}\t{}",
-            get_basic_data_str("tEXt", &self.info),
-            self.text
-        )
-    }
-}
-
-impl tEXt {
-    pub fn new(i: usize, info: ChunkBasicInfo, bytes: &Vec<u8>) -> Self {
-        let chunk_length_in_bytes = u32::from_be_bytes(info.data_length);
-        let start = i + 8; //Skipping chunk length and type
-        let text = std::str::from_utf8(&bytes[start..start + chunk_length_in_bytes as usize])
-            .expect("Failed to read text from chunk");
-
-        Self {
-            info,
-            text: String::from(text),
-        }
-    }
-}
-
-impl Chunk for tEXt {
-    fn get_basic_info(&self) -> &ChunkBasicInfo {
-        &self.info
-    }
-}
-
-pub struct Unknown {
-    info: ChunkBasicInfo,
-}
-impl Display for Unknown {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", get_basic_data_str("Unknown", &self.info))
-    }
-}
-
-impl Unknown {
-    pub fn new(info: ChunkBasicInfo) -> Self {
-        Self { info }
-    }
-}
-
-impl Chunk for Unknown {
-    fn get_basic_info(&self) -> &ChunkBasicInfo {
-        &self.info
-    }
-}
-
-pub trait Chunk: Display {
-    fn get_basic_info(&self) -> &ChunkBasicInfo;
-}
-
-fn get_basic_data_str(header: &str, info: &ChunkBasicInfo) -> String {
-    format!("{}:\n\tType:          {}\n\tData length:   {:?}\n\tBytes:         {:?}\n\tCRC:           {:?}\n",
-    header,
-    info.type_str,
-    info.data_length,
-    info.type_bytes,
-    info.CRC)
 }

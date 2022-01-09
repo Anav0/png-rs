@@ -1,4 +1,6 @@
-use crate::chunks::{tEXt, Chunk, ChunkBasicInfo, Unknown, IDAT, IEND, IHDR, PLTE};
+pub mod chunks;
+
+use self::chunks::{tEXt, Chunk, ChunkBasicInfo, Unknown, IDAT, IEND, IHDR, PLTE};
 
 pub struct ChunkIterator<'a> {
     i: usize,

@@ -1,7 +1,6 @@
 use png::ChunkIterator;
 use std::{env, fs};
 
-mod chunks;
 mod png;
 
 fn main() {
