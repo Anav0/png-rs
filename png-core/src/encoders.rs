@@ -20,3 +20,17 @@ impl Encoder for EndOfFileEncoder {
         fs::write(file_name, bytes).expect("Failed to write file with message after IEND chunk");
     }
 }
+
+pub struct CustomChunkEncoder;
+
+impl CustomChunkEncoder {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Encoder for CustomChunkEncoder {
+    fn encode(&self, file_name: &str, message: &str, bytes: &mut Vec<u8>) {
+        todo!()
+    }
+}

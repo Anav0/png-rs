@@ -5,10 +5,3 @@ version = 3
 [[package]]
 name = "png-cli"
 version = "0.1.0"
-dependencies = [
- "png-core",
-]
-
-[[package]]
-name = "png-core"
-version = "0.1.0"
