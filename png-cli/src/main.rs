@@ -38,7 +38,15 @@ fn main() {
     for arg in &args {
         match arg.as_str() {
             "-h" => {
-                print_help();
+                println!("PNG file format explorer");
+                println!("-h - displays help");
+                println!("-i - prints info about PNG file");
+                println!("-d - decoding message from image");
+                println!(
+                    "-e end | chunk - encodes message in custom chunk or at the end of the file."
+                );
+                println!("-m <message> - message to encode");
+                println!("-o <filename> - output filename");
                 return;
             }
             "-o" => {
@@ -100,14 +108,4 @@ fn main() {
             ),
         };
     }
-}
-
-fn print_help() {
-    println!("PNG file format explorer");
-    println!("-h - displays help");
-    println!("-i - prints info about PNG file");
-    println!("-d end | chunk - decoding message from image");
-    println!("-e end | chunk - encodes message");
-    println!("-m <message> - message to encode");
-    println!("-o <filename> - output filename");
 }
