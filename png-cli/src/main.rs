@@ -1,4 +1,5 @@
 use png_core::{
+    decoders::{Decoder, EndOfFileDecoder},
     encoders::{CustomChunkEncoder, Encoder, EndOfFileEncoder},
     ChunkIterator,
 };
@@ -47,11 +48,7 @@ fn main() {
                 parameters.print_info = true;
             }
             "-d" => {
-                parameters.decode = match args[i + 1].as_str() {
-                    "end" => Some(Encoding::AtTheEnd),
-                    "chunk" => Some(Encoding::InCustomChunk),
-                    _ => None,
-                };
+                parameters.decode = Some(Encoding::AtTheEnd);
                 parameters.is_encoding = false;
             }
             "-e" => {
@@ -77,6 +74,13 @@ fn main() {
 
         for chunk in chunk_iter {
             println!("{}", chunk);
+        }
+    }
+
+    if !parameters.is_encoding && parameters.decode.is_some() {
+        match EndOfFileDecoder::new().decode(&file_bytes) {
+            Some(text) => println!("Decoded text: {}", text),
+            None => println!("No secret message was present after IEND chunk"),
         }
     }
 

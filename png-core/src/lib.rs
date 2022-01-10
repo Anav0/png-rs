@@ -1,5 +1,6 @@
 pub mod chunks;
 pub mod encoders;
+pub mod decoders;
 
 use self::chunks::{tEXt, Chunk, ChunkBasicInfo, Unknown, IDAT, IEND, IHDR, PLTE};
 
@@ -51,6 +52,7 @@ impl<'a> Iterator for ChunkIterator<'a> {
             "IDAT" => Box::from(IDAT::new(info, &self.bytes)),
             "IEND" => Box::from(IEND::new(info)),
             "tEXt" => Box::from(tEXt::new(self.i, info, self.bytes)),
+            "sMSG" => Box::from(tEXt::new(self.i, info, self.bytes)),
             // "cHRM" => ,
             // "gAMA" => ,
             // "iCCP" => ,
