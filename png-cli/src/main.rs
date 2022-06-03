@@ -1,9 +1,10 @@
+use anyhow::Context;
 use png_core::{
     decoders::{Decoder, EndOfFileDecoder},
     encoders::{CustomChunkEncoder, Encoder, EndOfFileEncoder},
     ChunkIterator,
 };
-use std::{env, fs};
+use std::{env, error::Error, fs};
 
 enum Encoding {
     AtTheEnd,
@@ -27,7 +28,7 @@ impl Default for Parameters {
     }
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let mut parameters = Parameters::default();
     let args: Vec<String> = env::args().collect();
 
@@ -35,6 +36,7 @@ fn main() {
     let mut message = String::new();
 
     let mut i = 0;
+
     for arg in &args {
         match arg.as_str() {
             "-h" => {
@@ -47,7 +49,7 @@ fn main() {
                 );
                 println!("-m <message> - message to encode");
                 println!("-o <filename> - output filename");
-                return;
+                return Ok(());
             }
             "-o" => {
                 parameters.output_filename = args[i + 1].clone() + ".png";
@@ -75,7 +77,12 @@ fn main() {
         i += 1;
     }
 
-    let mut file_bytes = fs::read(file_path).expect("Cannot read png file");
+    let mut file_bytes = fs::read(file_path).with_context(|| {
+        format!(
+            "Failed to open png file at: '{}', first CLI argument must be a file path",
+            file_path
+        )
+    })?;
 
     if parameters.print_info {
         let chunk_iter = ChunkIterator::new(&file_bytes);
@@ -108,4 +115,6 @@ fn main() {
             ),
         };
     }
+
+    return Ok(());
 }
